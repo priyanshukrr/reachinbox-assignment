@@ -2,7 +2,7 @@
 
 A full-stack email campaign scheduling platform built with Express, TypeScript, PostgreSQL, BullMQ, Redis, and React.
 
-## 🚀 Key Features
+## Key Features
 
 - **Delayed Email Scheduling**: Schedule campaign emails with configurable delays and rate limits.
 - **Fault-Tolerant Queue**: BullMQ + Redis queue with exponential backoff retries.
@@ -10,13 +10,13 @@ A full-stack email campaign scheduling platform built with Express, TypeScript, 
 - **Real-Time Monitoring**: Live status tracking (`SCHEDULED`, `PROCESSING`, `SENT`, `FAILED`).
 - **Modern UI Dashboard**: Clean SaaS interface inspired by modern design systems.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Backend**: Node.js, Express, TypeScript, Prisma ORM, BullMQ, Redis, Nodemailer
 - **Frontend**: React 19, TypeScript, Vite
 - **Infrastructure**: PostgreSQL, Redis (Docker Compose)
 
-## 🏁 Quick Start
+## Quick Start
 
 ### 1. Infrastructure (PostgreSQL & Redis)
 ```bash
