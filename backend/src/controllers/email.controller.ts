@@ -1,5 +1,29 @@
 import { Request, Response } from "express";
 import { scheduleEmail } from "../services/email.service";
+import prisma from "../db/prisma";
+
+export async function getEmailsController(req: Request, res: Response) {
+  try {
+    const { campaignId } = req.query;
+
+    const emails = await prisma.email.findMany({
+      where: campaignId ? { campaignId: String(campaignId) } : {},
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return res.status(200).json({
+      emails,
+    });
+  } catch (error) {
+    console.error("Get emails error:", error);
+
+    return res.status(500).json({
+      error: "Failed to fetch emails",
+    });
+  }
+}
 
 export async function scheduleEmailController(
   req: Request,

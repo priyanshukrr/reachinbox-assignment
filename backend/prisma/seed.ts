@@ -10,26 +10,60 @@ async function main() {
     update: {},
     create: {
       googleId: "test-google-id-001",
+      username: "testuser",
+      password: "password123",
       name: "Test User",
       email: "test@reachinbox.local",
       avatar: null,
+      role: "USER",
     },
   });
 
-  console.log("✅ Test user ready:");
-  console.log({
+  console.log("✅ Test user ready:", {
     id: user.id,
     name: user.name,
     email: user.email,
   });
 
-  // Check whether test campaign already exists
-  let campaign = await prisma.campaign.findFirst({
+  // Create or get Admin user: priyanshu221 / priyanshu123
+  const adminUser = await prisma.user.upsert({
     where: {
-      userId: user.id,
-      subject: "Test Campaign",
+      username: "priyanshu221",
+    },
+    update: {
+      password: "priyanshu123",
+      role: "ADMIN",
+    },
+    create: {
+      username: "priyanshu221",
+      password: "priyanshu123",
+      name: "Priyanshu (Admin)",
+      email: "priyanshu221@reachinbox.local",
+      role: "ADMIN",
     },
   });
+
+  console.log("👑 Admin user ready:", {
+    id: adminUser.id,
+    username: adminUser.username,
+    name: adminUser.name,
+    role: adminUser.role,
+  });
+
+  // Check whether test campaign already exists for admin
+  let campaign = await prisma.campaign.findFirst({
+    where: {
+      userId: adminUser.id,
+    },
+  });
+
+  if (!campaign) {
+    campaign = await prisma.campaign.findFirst({
+      where: {
+        userId: user.id,
+      },
+    });
+  }
 
   // Create campaign if it doesn't exist
   if (!campaign) {
@@ -37,7 +71,7 @@ async function main() {
 
     campaign = await prisma.campaign.create({
       data: {
-        userId: user.id,
+        userId: adminUser.id,
         subject: "Test Campaign",
         body: "Hello! This is a test campaign from ReachInbox.",
         startTime,
@@ -47,8 +81,7 @@ async function main() {
     });
   }
 
-  console.log("✅ Test campaign ready:");
-  console.log({
+  console.log("✅ Test campaign ready:", {
     id: campaign.id,
     subject: campaign.subject,
     startTime: campaign.startTime,

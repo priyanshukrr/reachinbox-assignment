@@ -73,22 +73,33 @@ const worker = new Worker<EmailJobData>(
     } catch (error) {
       console.error(`❌ Failed to process email ${emailId}:`, error);
 
-      // 4. Mark email as FAILED
-      try {
-        await prisma.email.update({
-          where: {
-            id: emailId,
-          },
-          data: {
-            status: "FAILED",
-          },
-        });
+      const maxAttempts = job.opts.attempts || 1;
+      const currentAttempt = (job.attemptsMade || 0) + 1;
 
-        console.log(`❌ Email ${emailId} status → FAILED`);
-      } catch (dbError) {
-        console.error(
-          `❌ Could not update email ${emailId} to FAILED:`,
-          dbError
+      if (currentAttempt >= maxAttempts) {
+        // 4. Mark email as FAILED only on final attempt failure
+        try {
+          await prisma.email.update({
+            where: {
+              id: emailId,
+            },
+            data: {
+              status: "FAILED",
+            },
+          });
+
+          console.log(
+            `❌ Email ${emailId} status → FAILED (Final attempt ${currentAttempt}/${maxAttempts})`
+          );
+        } catch (dbError) {
+          console.error(
+            `❌ Could not update email ${emailId} to FAILED:`,
+            dbError
+          );
+        }
+      } else {
+        console.log(
+          `⚠️ Email ${emailId} attempt ${currentAttempt}/${maxAttempts} failed. Retrying...`
         );
       }
 

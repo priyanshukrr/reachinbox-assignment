@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import prisma from "./db/prisma";
 import emailRoutes from "./routes/email.routes";
+import authRoutes from "./routes/auth.routes";
 
 dotenv.config();
 
@@ -11,7 +12,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Email routes
+// Auth & Email routes
+app.use("/api/auth", authRoutes);
 app.use("/api/emails", emailRoutes);
 
 // Root

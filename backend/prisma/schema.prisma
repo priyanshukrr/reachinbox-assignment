@@ -9,10 +9,13 @@ datasource db {
 
 model User {
   id        String   @id @default(uuid())
-  googleId  String   @unique
+  googleId  String?  @unique
+  username  String?  @unique
+  password  String?
   name      String
   email     String   @unique
   avatar    String?
+  role      String   @default("USER")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -20,6 +23,7 @@ model User {
   emails    Email[]
 
   @@index([email])
+  @@index([username])
 }
 
 model Campaign {
@@ -67,6 +71,7 @@ model Email {
   @@index([scheduledAt])
   @@index([status])
   @@index([recipient])
+  @@index([campaignId, status, scheduledAt])
 }
 
 enum EmailStatus {
