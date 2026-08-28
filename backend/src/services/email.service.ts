@@ -132,31 +132,37 @@ export async function scheduleEmail(input: ScheduleEmailInput) {
     }
   );
 
-  // 6. Calculate BullMQ delay
-  const delay = Math.max(0, finalScheduledAt.getTime() - Date.now());
+  // 6. If Redis/BullMQ is available (local dev), add delayed job to queue
+  if (emailQueue) {
+    const delay = Math.max(0, finalScheduledAt.getTime() - Date.now());
 
-  // 7. Add delayed job to BullMQ
-  await emailQueue.add(
-    "send-email",
-    {
+    await emailQueue.add(
+      "send-email",
+      {
+        emailId: email.id,
+        recipient: email.recipient,
+        subject: email.subject,
+        body: email.body,
+      },
+      {
+        delay,
+        jobId: email.id,
+      }
+    );
+
+    console.log("Email queued in BullMQ:", {
       emailId: email.id,
-      recipient: email.recipient,
-      subject: email.subject,
-      body: email.body,
-    },
-    {
+      scheduledAt: finalScheduledAt.toISOString(),
       delay,
-      jobId: email.id,
-    }
-  );
-
-  console.log("📅 Email scheduled:", {
-    emailId: email.id,
-    scheduledAt: finalScheduledAt.toISOString(),
-    delay,
-    delayBetweenEmails: campaign.delayBetweenEmails,
-    hourlyLimit: campaign.hourlyLimit,
-  });
+    });
+  } else {
+    // On Vercel (no Redis): email is saved in DB with SCHEDULED status.
+    // The Vercel Cron Job (/api/cron/process-emails) picks it up when due.
+    console.log("Email saved to DB (cron will process):", {
+      emailId: email.id,
+      scheduledAt: finalScheduledAt.toISOString(),
+    });
+  }
 
   return email;
 }
